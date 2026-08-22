@@ -67,9 +67,7 @@ void Engine::go()
 
     while (running)
     {
-
         const Uint64 currentTime = SDL_GetTicksNS();
-
         const double elapsedSeconds
             = static_cast<double>(currentTime - previousTime) / static_cast<double>(SDL_NS_PER_SECOND);
 

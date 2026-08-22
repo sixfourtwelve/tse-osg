@@ -25,15 +25,16 @@ namespace TSE
     private:
         void resize(int width, int height);
 
-        SDL_Window* mWindow;
-        SDL_GLContext mGLContext;
+        Uint64 mFpsSampleStart = 0;
+        Uint64 mFramesInSample = 0;
         int mWidth = 0;
         int mHeight = 0;
         float mTime = 0.0F;
+
+        SDL_Window* mWindow;
+        SDL_GLContext mGLContext;
         osg::ref_ptr<osg::Camera> mCamera;
         osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> mGraphicsWindow;
         osgViewer::Viewer mViewer;
-        Uint64 mFpsSampleStart = 0;
-        Uint64 mFramesInSample = 0;
     };
 }
