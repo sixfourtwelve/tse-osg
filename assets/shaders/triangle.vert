@@ -4,6 +4,9 @@ layout(location = 0) in vec4 osg_Vertex;
 
 uniform mat4 osg_ModelViewProjectionMatrix;
 uniform vec3 uPosition;
+uniform vec4 uColor;
+
+out vec4 vColor;
 
 void main()
 {
@@ -13,4 +16,6 @@ void main()
     gl_Position =
         osg_ModelViewProjectionMatrix *
         position;
+
+    vColor = uColor;
 }

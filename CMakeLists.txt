@@ -50,9 +50,41 @@ target_link_libraries(imgui
         OpenGL::GL
 )
 
-add_executable(tse
-    src/main.cpp
+file(GLOB_RECURSE COMPONENT_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/components/*.cpp"
 )
+
+file(GLOB_RECURSE COMPONENT_HEADERS
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/components/*.hpp"
+)
+
+if(COMPONENT_SOURCES)
+    add_library(tse_components STATIC
+        ${COMPONENT_SOURCES}
+        ${COMPONENT_HEADERS}
+    )
+    target_include_directories(tse_components
+        PUBLIC
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+else()
+    add_library(tse_components INTERFACE)
+    target_sources(tse_components INTERFACE ${COMPONENT_HEADERS})
+    target_include_directories(tse_components
+        INTERFACE
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+endif()
+
+file(GLOB_RECURSE SOURCE_FILES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/apps/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/apps/*.hpp"
+)
+
+add_executable(tse ${SOURCE_FILES})
 
 if(APPLE)
   target_compile_options(tse PRIVATE
@@ -63,13 +95,19 @@ if(APPLE)
 endif()
 
 target_include_directories(tse
-  SYSTEM PRIVATE
-  ${OPENSCENEGRAPH_INCLUDE_DIRS}
+    PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/apps/tse"
+)
+
+target_include_directories(tse
+    SYSTEM PRIVATE
+        ${OPENSCENEGRAPH_INCLUDE_DIRS}
 )
 
 target_link_libraries(tse
     PRIVATE
         imgui::imgui
+        tse_components
         ${OPENSCENEGRAPH_LIBRARIES}
 )
 
@@ -80,9 +118,12 @@ if(APPLE)
     )
 endif()
 
-add_custom_command(
-    TARGET tse POST_BUILD
+add_custom_target(tse_assets ALL
+    COMMAND ${CMAKE_COMMAND} -E rm -rf
+            "${CMAKE_CURRENT_BINARY_DIR}/assets"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/shaders"
-            "$<TARGET_FILE_DIR:tse>/shaders"
+            "${CMAKE_SOURCE_DIR}/assets"
+            "${CMAKE_CURRENT_BINARY_DIR}/assets"
+    COMMENT "Copying application assets"
 )
+add_dependencies(tse tse_assets)
