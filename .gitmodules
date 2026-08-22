@@ -1,0 +1,6 @@
+[submodule "vendor/SDL"]
+	path = vendor/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/OpenSceneGraph"]
+	path = vendor/OpenSceneGraph
+	url = https://github.com/OpenMW/osg.git
