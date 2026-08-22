@@ -100,13 +100,11 @@ int main()
     osg::ref_ptr<osg::Uniform> positionUniform = new osg::Uniform("uPosition", osg::Vec3(0.0f, 0.0f, 0.0f));
 
     stateSet->addUniform(positionUniform.get());
+    stateSet->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
     osg::ref_ptr<osg::Group> root = new osg::Group;
-
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-
     root->addChild(geode.get());
-
     geode->addDrawable(geometry.get());
 
     osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> graphicsWindow
