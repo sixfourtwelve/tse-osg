@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 
+#include <imgui.h>
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/Program>
@@ -11,6 +12,8 @@
 #include <osgViewer/GraphicsWindow>
 #include <osgViewer/Viewer>
 
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_sdl3.h>
 #include <iostream>
 
 static osg::ref_ptr<osg::Shader> loadShader(osg::Shader::Type type, const char* path)
@@ -63,6 +66,17 @@ int main()
         SDL_Quit();
         return 1;
     }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplSDL3_InitForOpenGL(window, context);
+    ImGui_ImplOpenGL3_Init();
 
     SDL_GL_SetSwapInterval(1);
 
@@ -138,6 +152,7 @@ int main()
 
         while (SDL_PollEvent(&event))
         {
+            ImGui_ImplSDL3_ProcessEvent(&event);
             if (event.type == SDL_EVENT_QUIT)
                 running = false;
 
@@ -157,18 +172,29 @@ int main()
             }
         }
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+
         time += 0.01f;
 
         positionUniform->set(osg::Vec3(sinf(time) * 0.5f, cosf(time) * 0.5f, 0.0f));
 
         SDL_GL_MakeCurrent(window, context);
 
-        viewer.frame();
+        ImGui::ShowDemoWindow(nullptr);
 
+        viewer.frame();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
     }
 
     viewer.setDone(true);
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
     SDL_GL_DestroyContext(context);
     SDL_DestroyWindow(window);

@@ -4,3 +4,6 @@
 [submodule "vendor/OpenSceneGraph"]
 	path = vendor/OpenSceneGraph
 	url = https://github.com/OpenMW/osg.git
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = git@github.com:ocornut/imgui.git

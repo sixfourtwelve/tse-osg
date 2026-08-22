@@ -25,6 +25,31 @@ find_package(OpenSceneGraph REQUIRED
         osgViewer
 )
 
+set(IMGUI_SOURCE_DIR "${CMAKE_SOURCE_DIR}/vendor/imgui")
+
+add_library(imgui STATIC
+    "${IMGUI_SOURCE_DIR}/imgui.cpp"
+    "${IMGUI_SOURCE_DIR}/imgui_demo.cpp"
+    "${IMGUI_SOURCE_DIR}/imgui_draw.cpp"
+    "${IMGUI_SOURCE_DIR}/imgui_tables.cpp"
+    "${IMGUI_SOURCE_DIR}/imgui_widgets.cpp"
+    "${IMGUI_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp"
+    "${IMGUI_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp"
+)
+add_library(imgui::imgui ALIAS imgui)
+
+target_include_directories(imgui
+    SYSTEM PUBLIC
+        "${IMGUI_SOURCE_DIR}"
+        "${IMGUI_SOURCE_DIR}/backends"
+)
+
+target_link_libraries(imgui
+    PUBLIC
+        SDL3::SDL3
+        OpenGL::GL
+)
+
 add_executable(tse
     src/main.cpp
 )
@@ -44,9 +69,8 @@ target_include_directories(tse
 
 target_link_libraries(tse
     PRIVATE
-        SDL3::SDL3
+        imgui::imgui
         ${OPENSCENEGRAPH_LIBRARIES}
-        OpenGL::GL
 )
 
 if(APPLE)
