@@ -1,5 +1,6 @@
 #include "engine.hpp"
 
+#include "tsephysics/world.hpp"
 #include "tserender/graphics.hpp"
 #include "tserender/window.hpp"
 #include "tseui/debugui.hpp"
@@ -27,6 +28,29 @@ Engine::Engine()
 
         mGraphics = std::make_unique<TSE::Graphics>(mWindow->getSDLWindow());
         mDebugUI = std::make_unique<TSE::DebugUI>(mWindow->getSDLWindow(), mGraphics->getGLContext());
+        mPhysicsWorld = std::make_unique<TSE::World>();
+
+        mGroundBodyDef = b3DefaultBodyDef();
+        mGroundBodyDef.position = (b3Vec3){ 0.0f, -1.0f, 0.0f };
+        mGroundBodyId = b3CreateBody(mPhysicsWorld->getWorldId(), &mGroundBodyDef);
+        mGroundBox = b3MakeBoxHull(50.0f, 1.0f, 50.0f);
+        mGroundShapeDef = b3DefaultShapeDef();
+
+        b3CreateHullShape(mGroundBodyId, &mGroundShapeDef, &mGroundBox.base);
+
+        mDynamicBodyDef = b3DefaultBodyDef();
+        mDynamicBodyDef.type = b3_dynamicBody;
+        mDynamicBodyDef.position = { 0.0f, 4.0f, 0.0f };
+
+        mDynamicBodyId = b3CreateBody(mPhysicsWorld->getWorldId(), &mDynamicBodyDef);
+
+        mDynamicBox = b3MakeBoxHull(1.0f, 1.0f, 1.0f);
+
+        mDynamicShapeDef = b3DefaultShapeDef();
+        mDynamicShapeDef.density = 1.0f;
+        mDynamicShapeDef.baseMaterial.friction = 0.3f;
+
+        b3CreateHullShape(mDynamicBodyId, &mDynamicShapeDef, &mDynamicBox.base);
     }
     catch (...)
     {
@@ -53,10 +77,28 @@ Engine::~Engine()
 
 void Engine::go()
 {
+
+    constexpr double physicsStepSeconds = 1.0 / 60.0;
+    constexpr int physicsSubSteps = 4;
+    constexpr int maximumCatchUpSteps = 8;
+
+    Uint64 previousTime = SDL_GetTicksNS();
+    double accumulatedTime = 0.0;
+
     bool running = true;
 
     while (running)
     {
+
+        const Uint64 currentTime = SDL_GetTicksNS();
+
+        const double elapsedSeconds
+            = static_cast<double>(currentTime - previousTime) / static_cast<double>(SDL_NS_PER_SECOND);
+
+        previousTime = currentTime;
+        const double maximumAccumulatedTime = physicsStepSeconds * maximumCatchUpSteps;
+        accumulatedTime = std::min(accumulatedTime + elapsedSeconds, maximumAccumulatedTime);
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -68,6 +110,20 @@ void Engine::go()
             if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE)
                 running = false;
         }
+
+        while (accumulatedTime >= physicsStepSeconds)
+        {
+            b3World_Step(mPhysicsWorld->getWorldId(), static_cast<float>(physicsStepSeconds), physicsSubSteps);
+            accumulatedTime -= physicsStepSeconds;
+        }
+
+        b3Vec3 dynamicPosition = b3Body_GetPosition(mDynamicBodyId);
+        Log(Debug::Debug) << "Dynamic body position: (" << dynamicPosition.x << ", " << dynamicPosition.y << ", "
+                          << dynamicPosition.z << ")";
+
+        b3Quat dynamicRotation = b3Body_GetRotation(mDynamicBodyId);
+        Log(Debug::Debug) << "Dynamic body rotation: (" << dynamicRotation.v.x << ", " << dynamicRotation.v.y << ", "
+                          << dynamicRotation.v.z << ")";
 
         mGraphics->beginFrame();
         mDebugUI->beginFrame();
