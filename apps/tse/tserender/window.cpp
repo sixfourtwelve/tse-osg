@@ -9,6 +9,9 @@ namespace TSE
             SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_MAXIMIZED);
         if (mWindow == nullptr)
             throw sdlError("Failed to create the SDL window");
+
+        if (!SDL_RaiseWindow(mWindow))
+            throw sdlError("Failed to raise the SDL window");
     }
 
     Window::~Window()

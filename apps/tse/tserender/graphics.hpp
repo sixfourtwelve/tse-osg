@@ -20,6 +20,8 @@ namespace TSE
         void draw();
         void endFrame();
 
+        SDL_GLContext getGLContext() const { return mGLContext; }
+
     private:
         void resize(int width, int height);
 
@@ -28,6 +30,7 @@ namespace TSE
         int mWidth = 0;
         int mHeight = 0;
         float mTime = 0.0F;
+        osg::ref_ptr<osg::MatrixTransform> mModel;
         osg::ref_ptr<osg::Camera> mCamera;
         osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> mGraphicsWindow;
         osgViewer::Viewer mViewer;

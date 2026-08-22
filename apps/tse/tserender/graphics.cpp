@@ -6,10 +6,14 @@
 #include <SDL3/SDL_video.h>
 #include <osg/Geode>
 #include <osg/Geometry>
+#include <osg/Matrix>
+#include <osg/MatrixTransform>
 #include <osg/Program>
 #include <osg/Shader>
 #include <osg/StateSet>
+#include <osg/Transform>
 #include <osg/Viewport>
+#include <osgDB/ReadFile>
 
 #include <stdexcept>
 
@@ -41,6 +45,17 @@ namespace TSE
 
         mViewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
 
+        osg::ref_ptr<osg::Node> loadedModel = osgDB::readNodeFile("assets/models/beetle.obj");
+
+        if (!loadedModel.valid())
+            throw std::runtime_error("Failed to load assets/models/beetle.obj");
+
+        loadedModel->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+        mModel = new osg::MatrixTransform;
+        mModel->addChild(loadedModel.get());
+
+        mViewer.setSceneData(mModel.get());
+
         osg::Camera* camera = mViewer.getCamera();
         camera->setGraphicsContext(mGraphicsWindow.get());
         camera->setViewMatrixAsLookAt(osg::Vec3d(0.0, 0.0, 2.0), osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(0.0, 1.0, 0.0));
@@ -70,6 +85,7 @@ namespace TSE
     void Graphics::draw()
     {
         mTime += 0.01F;
+        mModel->setMatrix(osg::Matrix::rotate(mTime, osg::Vec3d(1.0, 1.0, 0.0)));
         mViewer.frame();
     }
 

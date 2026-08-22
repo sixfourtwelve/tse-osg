@@ -23,7 +23,6 @@ public:
     void go();
 
 private:
-    SDL_GLContext mGLContext = nullptr;
     std::unique_ptr<TSE::Window> mWindow;
     std::unique_ptr<TSE::Graphics> mGraphics;
     std::unique_ptr<TSE::DebugUI> mDebugUI;

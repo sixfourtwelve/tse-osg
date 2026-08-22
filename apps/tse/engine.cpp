@@ -26,16 +26,13 @@ Engine::Engine()
         Log(Debug::Info) << "Created SDL window: " << SDL_GetWindowTitle(mWindow->getSDLWindow());
 
         mGraphics = std::make_unique<TSE::Graphics>(mWindow->getSDLWindow());
-        mDebugUI = std::make_unique<TSE::DebugUI>(mWindow->getSDLWindow(), mGLContext);
+        mDebugUI = std::make_unique<TSE::DebugUI>(mWindow->getSDLWindow(), mGraphics->getGLContext());
     }
     catch (...)
     {
         Log(Debug::Error) << "Engine initialization failed, cleaning up resources";
         mDebugUI.reset();
         mGraphics.reset();
-
-        if (mGLContext != nullptr)
-            SDL_GL_DestroyContext(mGLContext);
 
         SDL_Quit();
         throw;
