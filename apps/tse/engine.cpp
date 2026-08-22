@@ -28,29 +28,7 @@ Engine::Engine()
 
         mGraphics = std::make_unique<TSE::Graphics>(mWindow->getSDLWindow());
         mDebugUI = std::make_unique<TSE::DebugUI>(mWindow->getSDLWindow(), mGraphics->getGLContext());
-        mPhysicsWorld = std::make_unique<TSE::World>();
-
-        mGroundBodyDef = b3DefaultBodyDef();
-        mGroundBodyDef.position = (b3Vec3){ 0.0f, -1.0f, 0.0f };
-        mGroundBodyId = b3CreateBody(mPhysicsWorld->getWorldId(), &mGroundBodyDef);
-        mGroundBox = b3MakeBoxHull(50.0f, 1.0f, 50.0f);
-        mGroundShapeDef = b3DefaultShapeDef();
-
-        b3CreateHullShape(mGroundBodyId, &mGroundShapeDef, &mGroundBox.base);
-
-        mDynamicBodyDef = b3DefaultBodyDef();
-        mDynamicBodyDef.type = b3_dynamicBody;
-        mDynamicBodyDef.position = { 0.0f, 4.0f, 0.0f };
-
-        mDynamicBodyId = b3CreateBody(mPhysicsWorld->getWorldId(), &mDynamicBodyDef);
-
-        mDynamicBox = b3MakeBoxHull(1.0f, 1.0f, 1.0f);
-
-        mDynamicShapeDef = b3DefaultShapeDef();
-        mDynamicShapeDef.density = 1.0f;
-        mDynamicShapeDef.baseMaterial.friction = 0.3f;
-
-        b3CreateHullShape(mDynamicBodyId, &mDynamicShapeDef, &mDynamicBox.base);
+        mPhysicsWorld = std::make_unique<TSE::World>(); // unused for now
     }
     catch (...)
     {
@@ -113,17 +91,8 @@ void Engine::go()
 
         while (accumulatedTime >= physicsStepSeconds)
         {
-            b3World_Step(mPhysicsWorld->getWorldId(), static_cast<float>(physicsStepSeconds), physicsSubSteps);
             accumulatedTime -= physicsStepSeconds;
         }
-
-        b3Vec3 dynamicPosition = b3Body_GetPosition(mDynamicBodyId);
-        Log(Debug::Debug) << "Dynamic body position: (" << dynamicPosition.x << ", " << dynamicPosition.y << ", "
-                          << dynamicPosition.z << ")";
-
-        b3Quat dynamicRotation = b3Body_GetRotation(mDynamicBodyId);
-        Log(Debug::Debug) << "Dynamic body rotation: (" << dynamicRotation.v.x << ", " << dynamicRotation.v.y << ", "
-                          << dynamicRotation.v.z << ")";
 
         mGraphics->beginFrame();
         mDebugUI->beginFrame();
