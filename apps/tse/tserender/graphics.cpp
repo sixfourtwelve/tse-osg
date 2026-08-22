@@ -3,6 +3,7 @@
 #include <components/debug/debuglog.hpp>
 #include <components/sdlhelpers/error.hpp>
 
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -32,9 +33,10 @@ namespace TSE
         if (!SDL_GL_MakeCurrent(mWindow, mGLContext))
             throw sdlError("Failed to make the OpenGL context current");
 
-        Log(Debug::Info) << "Created OpenGL context: " << SDL_GL_GetCurrentContext();
-
         SDL_GL_SetSwapInterval(1);
+        SDL_SetWindowTitle(mWindow, "TSE - FPS: measuring...");
+
+        Log(Debug::Info) << "Created OpenGL context: " << SDL_GL_GetCurrentContext();
 
         if (!SDL_GetWindowSizeInPixels(mWindow, &mWidth, &mHeight))
             throw sdlError("Failed to query the window size");
@@ -45,23 +47,13 @@ namespace TSE
 
         mViewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
 
-        osg::ref_ptr<osg::Node> loadedModel = osgDB::readNodeFile("assets/models/beetle.obj");
-
-        if (!loadedModel.valid())
-            throw std::runtime_error("Failed to load assets/models/beetle.obj");
-
-        loadedModel->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-        mModel = new osg::MatrixTransform;
-        mModel->addChild(loadedModel.get());
-
-        mViewer.setSceneData(mModel.get());
-
         osg::Camera* camera = mViewer.getCamera();
         camera->setGraphicsContext(mGraphicsWindow.get());
         camera->setViewMatrixAsLookAt(osg::Vec3d(0.0, 0.0, 2.0), osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(0.0, 1.0, 0.0));
 
         resize(mWidth, mHeight);
         mViewer.realize();
+        mFpsSampleStart = SDL_GetTicks();
     }
 
     Graphics::~Graphics()
@@ -85,7 +77,6 @@ namespace TSE
     void Graphics::draw()
     {
         mTime += 0.01F;
-        mModel->setMatrix(osg::Matrix::rotate(mTime, osg::Vec3d(1.0, 1.0, 0.0)));
         mViewer.frame();
     }
 
@@ -93,6 +84,24 @@ namespace TSE
     {
         if (!SDL_GL_SwapWindow(mWindow))
             throw sdlError("Failed to swap the OpenGL window");
+
+        ++mFramesInSample;
+
+        const Uint64 now = SDL_GetTicks();
+        const Uint64 elapsedMs = now - mFpsSampleStart;
+
+        if (elapsedMs < 1000)
+            return;
+
+        const double fps = static_cast<double>(mFramesInSample) * 1000.0 / static_cast<double>(elapsedMs);
+
+        const std::string title = "TSE - FPS: " + std::to_string(static_cast<unsigned int>(fps));
+
+        if (!SDL_SetWindowTitle(mWindow, title.c_str()))
+            throw sdlError("Failed to update the window title");
+
+        mFpsSampleStart = now;
+        mFramesInSample = 0;
     }
 
     void Graphics::resize(int width, int height)

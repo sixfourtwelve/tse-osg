@@ -30,9 +30,10 @@ namespace TSE
         int mWidth = 0;
         int mHeight = 0;
         float mTime = 0.0F;
-        osg::ref_ptr<osg::MatrixTransform> mModel;
         osg::ref_ptr<osg::Camera> mCamera;
         osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> mGraphicsWindow;
         osgViewer::Viewer mViewer;
+        Uint64 mFpsSampleStart = 0;
+        Uint64 mFramesInSample = 0;
     };
 }

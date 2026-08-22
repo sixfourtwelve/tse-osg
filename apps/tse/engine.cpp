@@ -33,6 +33,7 @@ Engine::Engine()
         Log(Debug::Error) << "Engine initialization failed, cleaning up resources";
         mDebugUI.reset();
         mGraphics.reset();
+        mWindow.reset();
 
         SDL_Quit();
         throw;
