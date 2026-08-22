@@ -11,10 +11,10 @@ namespace TSE
     class Graphics final
     {
     public:
-        Graphics(SDL_Window* window, SDL_GLContext glContext);
-        ~Graphics();
-
         TSE_NON_COPYABLE_NON_MOVABLE(Graphics)
+
+        Graphics(SDL_Window* window);
+        ~Graphics();
 
         void beginFrame();
         void draw();
@@ -28,8 +28,7 @@ namespace TSE
         int mWidth = 0;
         int mHeight = 0;
         float mTime = 0.0F;
-        osg::ref_ptr<osg::Uniform> mPositionUniform;
-        osg::ref_ptr<osg::Uniform> mColorUniform;
+        osg::ref_ptr<osg::Camera> mCamera;
         osg::ref_ptr<osgViewer::GraphicsWindowEmbedded> mGraphicsWindow;
         osgViewer::Viewer mViewer;
     };

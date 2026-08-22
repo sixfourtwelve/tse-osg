@@ -78,6 +78,12 @@ else()
     )
 endif()
 
+target_link_libraries(tse_components
+    PUBLIC
+        SDL3::SDL3
+        ${OPENSCENEGRAPH_LIBRARIES}
+)
+
 file(GLOB_RECURSE SOURCE_FILES
     CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/apps/*.cpp"

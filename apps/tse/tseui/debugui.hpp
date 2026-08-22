@@ -10,10 +10,10 @@ namespace TSE
     class DebugUI final
     {
     public:
+        TSE_NON_COPYABLE_NON_MOVABLE(DebugUI)
+
         DebugUI(SDL_Window* window, SDL_GLContext glContext);
         ~DebugUI();
-
-        TSE_NON_COPYABLE_NON_MOVABLE(DebugUI)
 
         void onEvent(const SDL_Event& event);
         void beginFrame();
