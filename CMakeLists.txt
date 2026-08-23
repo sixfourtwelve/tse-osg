@@ -50,7 +50,6 @@ target_link_libraries(imgui
         OpenGL::GL
 )
 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/vendor/box3d")
 
 file(GLOB_RECURSE COMPONENT_SOURCES
     CONFIGURE_DEPENDS
@@ -83,7 +82,6 @@ endif()
 target_link_libraries(tse_components
     PUBLIC
         SDL3::SDL3
-        box3d::box3d
         ${OPENSCENEGRAPH_LIBRARIES}
 )
 
@@ -116,7 +114,6 @@ target_include_directories(tse
 target_link_libraries(tse
     PRIVATE
         imgui::imgui
-        box3d::box3d
         tse_components
         ${OPENSCENEGRAPH_LIBRARIES}
 )

@@ -1,6 +1,8 @@
 #include "window.hpp"
 
+#include <SDL3/SDL_mouse.h>
 #include <components/sdlhelpers/error.hpp>
+
 namespace TSE
 {
     Window::Window()
@@ -12,6 +14,8 @@ namespace TSE
 
         if (!SDL_RaiseWindow(mWindow))
             throw sdlError("Failed to raise the SDL window");
+
+        SDL_SetWindowRelativeMouseMode(mWindow, true);
     }
 
     Window::~Window()

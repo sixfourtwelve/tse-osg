@@ -1,6 +1,5 @@
 #include "engine.hpp"
 
-#include "tsephysics/world.hpp"
 #include "tserender/graphics.hpp"
 #include "tserender/window.hpp"
 #include "tseui/debugui.hpp"
@@ -13,6 +12,7 @@
 #include <imgui.h>
 
 #include <memory>
+#include <osg/FrameBufferObject>
 
 Engine::Engine()
 {
@@ -28,7 +28,6 @@ Engine::Engine()
 
         mGraphics = std::make_unique<TSE::Graphics>(mWindow->getSDLWindow());
         mDebugUI = std::make_unique<TSE::DebugUI>(mWindow->getSDLWindow(), mGraphics->getGLContext());
-        mPhysicsWorld = std::make_unique<TSE::World>(); // unused for now
     }
     catch (...)
     {
@@ -55,7 +54,6 @@ Engine::~Engine()
 
 void Engine::go()
 {
-
     constexpr double physicsStepSeconds = 1.0 / 60.0;
     constexpr int physicsSubSteps = 4;
     constexpr int maximumCatchUpSteps = 8;
@@ -72,18 +70,19 @@ void Engine::go()
             = static_cast<double>(currentTime - previousTime) / static_cast<double>(SDL_NS_PER_SECOND);
 
         previousTime = currentTime;
-        const double maximumAccumulatedTime = physicsStepSeconds * maximumCatchUpSteps;
+        constexpr double maximumAccumulatedTime = physicsStepSeconds * maximumCatchUpSteps;
         accumulatedTime = std::min(accumulatedTime + elapsedSeconds, maximumAccumulatedTime);
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        SDL_Event e;
+        while (SDL_PollEvent(&e))
         {
-            mDebugUI->onEvent(event);
+            mDebugUI->onEvent(e);
+            mGraphics->onEvent(e);
 
-            if (event.type == SDL_EVENT_QUIT)
+            if (e.type == SDL_EVENT_QUIT)
                 running = false;
 
-            if (event.type == SDL_EVENT_KEY_DOWN && event.key.scancode == SDL_SCANCODE_ESCAPE)
+            if (e.type == SDL_EVENT_KEY_DOWN && e.key.scancode == SDL_SCANCODE_ESCAPE)
                 running = false;
         }
 
